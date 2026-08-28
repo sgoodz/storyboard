@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Storyboard — journey capture for CRO</title>
+  <meta name="description" content="Map a user journey, capture every step at every breakpoint, and review it as a storyboard." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231F2227'/%3E%3Crect x='6' y='9' width='20' height='14' rx='2' fill='%23F5C542'/%3E%3C/svg%3E" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">Storyboard</span>
+    <span class="brand-tag">journey capture for CRO</span>
+  </div>
+  <div class="topbar-actions">
+    <div class="engine" id="engine">
+      <span class="engine-dot" id="engineDot"></span>
+      <span id="engineLabel">Checking engines…</span>
+      <button class="link" id="engineSettings" type="button">Settings</button>
+    </div>
+    <button class="btn ghost" id="btnShare" type="button" title="Copy a link that opens this journey">Copy link</button>
+    <div class="menu">
+      <button class="btn" id="btnExport" type="button" aria-haspopup="true" aria-expanded="false" disabled>Export ▾</button>
+      <div class="menu-list" id="exportMenu" hidden>
+        <button type="button" data-export="zip"><b>All frames (.zip)</b><span>One PNG per step and breakpoint — drop into Miro, Figma, PowerPoint</span></button>
+        <button type="button" data-export="pdf"><b>PDF</b><span>One frame per page, with step names and notes</span></button>
+        <button type="button" data-export="html"><b>Web report (.html)</b><span>Single file, images embedded, opens anywhere</span></button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="workspace">
+
+  <!-- ───────── Journey builder ───────── -->
+  <aside class="panel" id="builder">
+    <section class="panel-block">
+      <div class="block-head">
+        <span class="field-label">Journey</span>
+        <select id="journeySelect" class="select" title="Switch journey"></select>
+      </div>
+      <input id="journeyName" type="text" placeholder="e.g. Checkout — guest" autocomplete="off" />
+      <div class="journey-tools">
+        <button class="btn small ghost" id="btnDuplicate" type="button" title="Copy this journey and swap the domain — for competitors">Duplicate for another site</button>
+        <button class="btn small danger" id="btnDelete" type="button">Delete</button>
+      </div>
+    </section>
+
+    <section class="panel-block">
+      <div class="block-head">
+        <span class="field-label">Steps</span>
+        <span class="hint">Top to bottom is the order the user walks it</span>
+      </div>
+      <ol class="steps" id="steps"></ol>
+      <div class="steps-actions">
+        <button class="btn small" id="btnAddStep" type="button">+ Add step</button>
+        <button class="btn small ghost" id="btnPaste" type="button">Paste URLs</button>
+        <button class="btn small ghost" id="btnSample" type="button">Load sample</button>
+      </div>
+      <div class="paste" id="pasteBox" hidden>
+        <textarea id="pasteArea" rows="5" placeholder="Paste URLs — one per line, or any text that contains them (a CSV column, a Screaming Frog export, a sitemap)"></textarea>
+        <div class="paste-actions">
+          <button class="btn small" id="btnPasteAdd" type="button">Add as steps</button>
+          <button class="btn small ghost" id="btnPasteCancel" type="button">Cancel</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel-block">
+      <div class="block-head">
+        <span class="field-label">Breakpoints</span>
+        <button class="link" id="btnCustomBp" type="button">+ Custom</button>
+      </div>
+      <div class="bps" id="bps"></div>
+      <label class="check">
+        <input type="checkbox" id="fullPage" checked />
+        <span>Full page (scrolls the whole page into one frame)</span>
+      </label>
+    </section>
+
+    <section class="panel-block panel-foot">
+      <button class="btn primary big" id="btnCapture" type="button">Capture journey</button>
+      <div class="capture-meta" id="captureMeta"></div>
+    </section>
+  </aside>
+
+  <!-- ───────── Board ───────── -->
+  <section class="board" id="board">
+    <div class="empty" id="empty">
+      <p class="eyebrow">Journey capture</p>
+      <h1>Walk the funnel.<br/>Keep every frame.</h1>
+      <p class="lede">Add the pages a customer moves through — landing, category, product, basket, checkout — pick the screens you care about, and Storyboard shoots the whole route so you can review it side by side.</p>
+      <div class="empty-actions">
+        <button class="btn primary" id="btnSample2" type="button">Try the sample journey</button>
+        <button class="btn ghost" id="btnFocusStep" type="button">Start from scratch</button>
+      </div>
+      <ul class="empty-how">
+        <li><b>Cloud engine</b> works right here, no setup — 25 frames a day on the free tier.</li>
+        <li><b>Local engine</b> runs on your machine for unlimited frames plus click/fill/wait interactions between steps.</li>
+      </ul>
+    </div>
+    <div class="grid" id="grid" hidden></div>
+  </section>
+</main>
+
+<!-- ───────── Lightbox ───────── -->
+<div class="lightbox" id="lightbox" hidden>
+  <div class="lightbox-chrome">
+    <div class="lightbox-title">
+      <span class="tape" id="lbTape">01</span>
+      <span id="lbLabel"></span>
+      <span class="mono dim" id="lbMeta"></span>
+    </div>
+    <div class="lightbox-nav">
+      <button class="btn small ghost" id="lbPrev" type="button" title="Previous breakpoint (←)">←</button>
+      <button class="btn small ghost" id="lbNext" type="button" title="Next breakpoint (→)">→</button>
+      <button class="btn small ghost" id="lbClose" type="button" title="Close (Esc)">Close</button>
+    </div>
+  </div>
+  <div class="lightbox-body">
+    <div class="lightbox-shot" id="lbShot"><img id="lbImg" alt="" /></div>
+    <aside class="lightbox-notes">
+      <span class="field-label">Notes</span>
+      <textarea id="lbNote" rows="10" placeholder="What would you change on this screen? Friction, hierarchy, CTA, trust signals…"></textarea>
+      <p class="hint">Notes are saved with the journey and included in the report.</p>
+      <div class="lightbox-tools">
+        <button class="btn small ghost" id="lbDownload" type="button">Download PNG</button>
+        <a class="btn small ghost" id="lbOpen" target="_blank" rel="noopener">Open image</a>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ───────── Settings ───────── -->
+<div class="modal" id="settings" hidden>
+  <div class="modal-card">
+    <div class="modal-head">
+      <h2>Capture engine</h2>
+      <button class="btn small ghost" id="settingsClose" type="button">Close</button>
+    </div>
+    <div class="engine-choice">
+      <label class="radio">
+        <input type="radio" name="engine" value="auto" />
+        <span><b>Automatic</b><br/><span class="hint">Use the local engine when it's running, otherwise cloud.</span></span>
+      </label>
+      <label class="radio">
+        <input type="radio" name="engine" value="cloud" />
+        <span><b>Cloud</b> <span class="mono dim">Microlink</span><br/><span class="hint">Works anywhere. Free tier is 25 frames a day per network; add a key for more.</span></span>
+      </label>
+      <label class="radio">
+        <input type="radio" name="engine" value="local" />
+        <span><b>Local</b> <span class="mono dim">Playwright · localhost:4321</span><br/><span class="hint">Unlimited frames, real browser, supports interactions between steps.</span></span>
+      </label>
+    </div>
+    <label class="field">
+      <span class="field-label">Microlink API key <span class="hint">(optional)</span></span>
+      <input id="apiKey" type="password" placeholder="Paste a key from microlink.io to lift the daily limit" autocomplete="off" />
+    </label>
+    <label class="field">
+      <span class="field-label">Local engine URL</span>
+      <input id="localUrl" type="text" value="http://localhost:4321" autocomplete="off" />
+    </label>
+    <div class="modal-help">
+      <p class="field-label">Start the local engine</p>
+      <pre class="mono">cd server
+npm install
+npx playwright install chromium
+npm start</pre>
+      <p class="hint">Then reload this page — it will find the engine on its own.</p>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

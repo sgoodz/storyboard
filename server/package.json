@@ -1,0 +1,14 @@
+{
+  "name": "storyboard-capture-engine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local Playwright capture engine for Storyboard (journey screenshots for CRO).",
+  "scripts": {
+    "start": "node capture.mjs",
+    "postinstall": "echo 'Now run: npx playwright install chromium'"
+  },
+  "dependencies": {
+    "playwright": "~1.47.0"
+  }
+}
