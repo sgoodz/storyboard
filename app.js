@@ -206,6 +206,7 @@
       setTimeout(() => ctrl.abort(), 1500);
       const r = await fetch(state.settings.localUrl.replace(/\/$/, "") + "/health", { signal: ctrl.signal });
       state.localAvailable = r.ok;
+      state.localMode = r.ok ? (await r.json().catch(() => ({}))).mode || "" : "";
     } catch (_) { state.localAvailable = false; }
     renderEngine();
   }
@@ -219,7 +220,7 @@
     const e = activeEngine();
     el.engineDot.className = "engine-dot " + (e === "local" ? (state.localAvailable ? "local" : "off") : "cloud");
     if (e === "local") {
-      el.engineLabel.textContent = state.localAvailable ? "Local engine · unlimited" : "Local engine not running";
+      el.engineLabel.textContent = state.localAvailable ? (state.localMode === "stealth" ? "Local engine · stealth · unlimited" : "Local engine · unlimited") : "Local engine not running";
     } else {
       const q = state.quota ? ` · ${state.quota.remaining} of ${state.quota.limit} left today` : "";
       el.engineLabel.textContent = (state.settings.apiKey ? "Cloud engine · keyed" : "Cloud engine") + q;

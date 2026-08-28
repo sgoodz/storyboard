@@ -15,6 +15,16 @@ Map a user journey (landing → category → product → basket → checkout), p
 
 The site auto-detects the local engine on `http://localhost:4321` and uses it when it's running.
 
+### Stealth mode (bot-protected sites)
+
+Some retailers (Argos, Currys, Screwfix, John Lewis…) sit behind Akamai or Cloudflare and serve "Access Denied" to headless browsers. Start the engine with
+
+```
+npm run start:stealth
+```
+
+and it drives your **real, installed Google Chrome** in a visible window instead — the same browser fingerprint as a person, so those sites render normally. Chrome windows will open and close on your screen while it captures; leave them alone. Requires Google Chrome to be installed; falls back to headless Chromium if it isn't.
+
 ### Interactions (local engine)
 
 Open a step's **Interactions** box and write one action per line. They run after the page loads and before the frame is captured. Leave the URL blank to continue from wherever the previous step ended.

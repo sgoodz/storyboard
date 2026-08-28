@@ -6,6 +6,7 @@
   "description": "Local Playwright capture engine for Storyboard (journey screenshots for CRO).",
   "scripts": {
     "start": "node capture.mjs",
+    "start:stealth": "STEALTH=1 node capture.mjs",
     "postinstall": "echo 'Now run: npx playwright install chromium'"
   },
   "dependencies": {

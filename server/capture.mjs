@@ -8,12 +8,33 @@ import { chromium } from "playwright";
 
 const PORT = Number(process.env.PORT || 4321);
 const CONTEXT_TTL_MS = 10 * 60 * 1000;
+// STEALTH=1 drives your real, installed Google Chrome with a visible window instead of
+// bundled headless Chromium. Bot-protected retailers (Akamai, Cloudflare) that serve
+// "Access Denied" to headless browsers render normally this way.
+const STEALTH = /^(1|true|yes)$/i.test(process.env.STEALTH || "");
 
 let browser;
+let mode = STEALTH ? "stealth" : "headless";
 const contexts = new Map(); // key -> { context, page, touched }
 
 async function getBrowser() {
-  if (!browser || !browser.isConnected()) browser = await chromium.launch();
+  if (browser && browser.isConnected()) return browser;
+  if (STEALTH) {
+    try {
+      browser = await chromium.launch({
+        channel: "chrome",
+        headless: false,
+        ignoreDefaultArgs: ["--enable-automation"],
+        args: ["--disable-blink-features=AutomationControlled", "--window-position=40,40"],
+      });
+      mode = "stealth";
+      return browser;
+    } catch (err) {
+      console.warn("Stealth mode needs Google Chrome installed — falling back to headless Chromium.\n  " + String(err.message).split("\n")[0]);
+      mode = "headless";
+    }
+  }
+  browser = await chromium.launch();
   return browser;
 }
 
@@ -26,10 +47,16 @@ async function getPage(key, { width, height, isMobile }) {
       deviceScaleFactor: isMobile ? 2 : 1,
       isMobile: !!isMobile,
       hasTouch: !!isMobile,
-      userAgent: isMobile
+      locale: "en-GB",
+      // Stealth keeps Chrome's real UA: a spoofed iPhone UA on a desktop TLS fingerprint is
+      // exactly what Akamai flags. Responsive layouts key off viewport width anyway.
+      userAgent: isMobile && mode !== "stealth"
         ? "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
         : undefined,
     });
+    if (mode === "stealth") {
+      await context.addInitScript(() => { Object.defineProperty(navigator, "webdriver", { get: () => undefined }); });
+    }
     const page = await context.newPage();
     entry = { context, page, touched: Date.now() };
     contexts.set(key, entry);
@@ -135,7 +162,7 @@ function send(res, status, obj) {
 
 http.createServer(async (req, res) => {
   if (req.method === "OPTIONS") return send(res, 204, {});
-  if (req.method === "GET" && req.url === "/health") return send(res, 200, { ok: true, engine: "playwright", contexts: contexts.size });
+  if (req.method === "GET" && req.url === "/health") return send(res, 200, { ok: true, engine: "playwright", mode, contexts: contexts.size });
   if (req.method === "POST" && req.url === "/capture") {
     let raw = "";
     for await (const chunk of req) raw += chunk;
@@ -152,7 +179,7 @@ http.createServer(async (req, res) => {
   }
   send(res, 404, { ok: false, error: "Not found" });
 }).listen(PORT, () => {
-  console.log(`Storyboard capture engine listening on http://localhost:${PORT}`);
+  console.log(`Storyboard capture engine listening on http://localhost:${PORT} (${STEALTH ? "stealth: real Chrome, visible windows" : "headless Chromium"})`);
   console.log("Leave this running, then reload Storyboard in the browser.");
 });
 
