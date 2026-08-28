@@ -52,6 +52,15 @@ setInterval(async () => {
 //   click <selector>        fill <selector> <text>     wait <ms>
 //   hover <selector>        press <key>                scroll <px>
 //   goto <url>              type <selector> <text>     hide <selector>
+// Responsive sites often render the same control twice (desktop + mobile DOM);
+// pick the first match that is actually visible so clicks land on the right one.
+async function pick(page, selector) {
+  const loc = page.locator(selector);
+  const n = await loc.count();
+  for (let i = 0; i < n; i++) if (await loc.nth(i).isVisible()) return loc.nth(i);
+  return loc.first();
+}
+
 async function runActions(page, actions = []) {
   for (const raw of actions) {
     const line = String(raw).trim();
@@ -59,16 +68,16 @@ async function runActions(page, actions = []) {
     const [cmd, ...rest] = line.split(/\s+/);
     const arg = rest.join(" ");
     switch (cmd.toLowerCase()) {
-      case "click":  await page.locator(arg).first().click({ timeout: 10_000 }); break;
-      case "hover":  await page.locator(arg).first().hover({ timeout: 10_000 }); break;
+      case "click":  await (await pick(page, arg)).click({ timeout: 10_000 }); break;
+      case "hover":  await (await pick(page, arg)).hover({ timeout: 10_000 }); break;
       case "fill": {
         const [sel, ...text] = rest;
-        await page.locator(sel).first().fill(text.join(" "), { timeout: 10_000 });
+        await (await pick(page, sel)).fill(text.join(" "), { timeout: 10_000 });
         break;
       }
       case "type": {
         const [sel, ...text] = rest;
-        await page.locator(sel).first().pressSequentially(text.join(" "), { timeout: 10_000, delay: 30 });
+        await (await pick(page, sel)).pressSequentially(text.join(" "), { timeout: 10_000, delay: 30 });
         break;
       }
       case "press":  await page.keyboard.press(arg); break;

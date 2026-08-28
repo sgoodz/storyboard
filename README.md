@@ -49,6 +49,23 @@ Then visit `https://<owner>.github.io/storyboard/`.
 - **Download PNG** — on any frame, from the lightbox.
 - **Copy link** — encodes the journey (name, steps, breakpoints, notes — not the images) into the URL so someone else can open it and capture.
 
+## Worked example — Toolstation, collect vs deliver
+
+[Open this journey in Storyboard](https://sgoodz.github.io/storyboard/#j=eyJuYW1lIjoiVG9vbHN0YXRpb24g4oCUIGNvbWJpIGRyaWxsLCBjb2xsZWN0IHZzIGRlbGl2ZXIiLCJzdGVwcyI6W3sibGFiZWwiOiJIb21lcGFnZSIsInVybCI6Imh0dHBzOi8vd3d3LnRvb2xzdGF0aW9uLmNvbS8iLCJhY3Rpb25zIjoiY2xpY2sgYnV0dG9uOmhhcy10ZXh0KFwiQWxsb3cgYWxsXCIpXG53YWl0IDUwMCJ9LHsibGFiZWwiOiJQb3dlciB0b29scyAobWVnYSBtZW51IGNhdGVnb3J5KSIsInVybCI6Imh0dHBzOi8vd3d3LnRvb2xzdGF0aW9uLmNvbS9wb3dlci10b29scy9jNSIsImFjdGlvbnMiOiIifSx7ImxhYmVsIjoiRHJpbGxzIChzdWItY2F0ZWdvcnkpIiwidXJsIjoiaHR0cHM6Ly93d3cudG9vbHN0YXRpb24uY29tL3Bvd2VyLXRvb2xzL2RyaWxscy9jNzE5IiwiYWN0aW9ucyI6IiJ9LHsibGFiZWwiOiJQcm9kdWN0IHBhZ2UiLCJ1cmwiOiJodHRwczovL3d3dy50b29sc3RhdGlvbi5jb20vZWluaGVsbC1wcm9mZXNzaW9uYWwtcHhjLTE4di04MG5tLWJydXNobGVzcy1jb3JkbGVzcy1jb21iaS1kcmlsbC1raXQvcDE3OTUxIiwiYWN0aW9ucyI6IiJ9LHsibGFiZWwiOiJDaG9vc2UgY2xpY2sgJiBjb2xsZWN0IiwidXJsIjoiIiwiYWN0aW9ucyI6ImNsaWNrIFtkYXRhLXRlc3RpZD1cImFkZC10by10cm9sbGV5LWNvbGxlY3Rpb24tYnV0dG9uXCJdXG53YWl0IDE1MDAifSx7ImxhYmVsIjoiQ2hvb3NlIGhvbWUgZGVsaXZlcnkiLCJ1cmwiOiIiLCJhY3Rpb25zIjoiY2xpY2sgYnV0dG9uOmhhcy10ZXh0KFwiQ2xvc2VcIilcbndhaXQgNTAwXG5jbGljayBbZGF0YS10ZXN0aWQ9XCJhZGQtdG8tdHJvbGxleS1kZWxpdmVyeS1idXR0b25cIl1cbndhaXQgMTUwMCJ9XSwiYnJlYWtwb2ludHMiOlsibW9iaWxlIiwiZGVza3RvcCJdLCJmdWxsUGFnZSI6ZmFsc2V9) (needs the local engine for the last two steps).
+
+| # | Step | URL | Interactions |
+|---|------|-----|--------------|
+| 01 | Homepage | `https://www.toolstation.com/` | `click button:has-text("Allow all")` — dismisses the cookie banner once; consent carries through the rest of the journey |
+| 02 | Power tools (mega-menu category) | `https://www.toolstation.com/power-tools/c5` | — |
+| 03 | Drills (sub-category) | `https://www.toolstation.com/power-tools/drills/c719` | — |
+| 04 | Product page | `https://www.toolstation.com/einhell-professional-…/p17951` | — |
+| 05 | Choose click & collect | *(blank — continues from step 04)* | `click [data-testid="add-to-trolley-collection-button"]` then `wait 1500` → captures the store-picker lightbox |
+| 06 | Choose home delivery | *(blank)* | `click button:has-text("Close")`, `wait 500`, `click [data-testid="add-to-trolley-delivery-button"]`, `wait 1500` → captures the "added to trolley" drawer |
+
+Breakpoints: Mobile 375 + Desktop 1440, full page off (so modals are captured as the user sees them). Then **Duplicate for another site** → `screwfix.com` and fix up the paths to repeat it for a competitor.
+
+Finding selectors: right-click the button in Chrome → Inspect, and use its `data-testid`, `id`, or `button:has-text("…")`. Any Playwright selector works.
+
 ## Roadmap ideas
 
 - Describe a journey in words ("home → menswear → jeans → a PDP → pick click & collect") and have it worked out from the site's navigation/schema
